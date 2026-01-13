@@ -4,82 +4,70 @@
 ![Data](https://img.shields.io/badge/Dataset-10.167_Dominios-blue)
 ![Focus](https://img.shields.io/badge/Focus-DMARC%20%2F%20SPF%20Analysis-red)
 
-> **Repositorio oficial de datos del "Estudio de Suplantación Empresarial en España 2026" realizado por el equipo de inteligencia de HackBlock.**
+> **Repositorio oficial de datos del "Estudio de Suplantación Empresarial en España 2026" realizado por HackBlock.**
 
-## 📋 Sobre el estudio
+## Sobre el estudio
 
 Hemos realizado un análisis masivo y pasivo sobre **10.167 dominios corporativos españoles** para evaluar su resiliencia frente a ataques de suplantación de identidad (*Email Spoofing*).
 
 El objetivo es medir el estado de implementación de protocolos de autenticación de correo (**DMARC, SPF y DKIM**) en el tejido empresarial nacional.
 
-### 📊 Resultados Globales
+### Resultados Globales
 
 El análisis de los registros DNS públicos arroja un escenario preocupante: **El 77% de las empresas analizadas presentan vulnerabilidades** que podrían permitir a un tercero enviar correos en su nombre.
 
 | Estado | Clasificación | Cantidad | Porcentaje | Significado |
 | :--- | :--- | :--- | :--- | :--- |
-| 🔴 | **ALTO RIESGO** (Posible) | **6.238** | **61,36%** | Falta total de DMARC o políticas nulas. Suplantación trivial. |
-| 🟠 | **RIESGO MEDIO** (Might be) | **1.603** | **15,77%** | Configuraciones laxas (`p=none`, `~all`). Protección insuficiente. |
-| 🟢 | **PROTEGIDOS** (No Posible) | **2.326** | **22,88%** | Política estricta (`p=reject/quarantine`). Identidad blindada. |
+| 🔴 | **RIESGO CRÍTICO** (Suplantación posible) | **6.238** | **61,36%** | Falta total de DMARC o políticas nulas. Suplantación trivial. |
+| 🟠 | **RIESGO MEDIO** (Suplantación quizá es posible) | **1.603** | **15,77%** | Configuraciones laxas (`p=none`, `~all`). Protección insuficiente. |
+| 🟢 | **PROTEGIDOS** (Suplantación NO es posible) | **2.326** | **22,88%** | Política estricta (`p=reject/quarantine`). Identidad blindada. |
 
 ---
 
-## 📂 Estructura del Dataset
+## Estructura del Dataset
 
 El archivo `results_2026.csv` contiene los datos crudos del estudio.
-Por razones de **seguridad y ética**, los dominios han sido **anonimizados (hasheados)** utilizando SHA-256.
+Por razones de **seguridad y ética**, los dominios han sido **anonimizados (hasheados)**.
 
 ### Formato del CSV:
 ```csv
-domain_hash,vulnerability_status
-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,POSIBLE
-5d41402abc4b2a76b9719d911017c59228b7e634963339898093952402774355,NO POSIBLE
-...
-domain_hash: Hash SHA-256 del dominio (ej: empresa.com).
+dominio_hashed,veredicto,raw_output,sector,ciudad,comunidad
+c0fb41c9a03c1d9252ff38ae6084533fa7aebf702d342f17c1cdfd7683cdc32c,Suplantación posible,7cc79fe189d654e916842c966c687539b768470eb672c199136a7774ea8c40db,"['leisure, travel & tourism']",Zaragoza,Aragon
+d9163315483dc4a57c227e895f46f917cfdef730b8d39a387fd16e8fbe767a7d,Suplantación NO es posible,e95b0e07c69afe9e0b7712b70f00949235f84e36f7eed99d0324dc3a2cfebd8f,['marketing & advertising'],Madrid,Comunidad de Madrid
+```
+dominio_hashed: Hash del dominio (ej: empresa.com).
 
-vulnerability_status:
+veredicto: Resultado del análisis.
 
-POSIBLE: Alta probabilidad de éxito en spoofing.
+    Suplantación posible: Alta probabilidad de éxito en spoofing.
 
-MIGHT BE: Probabilidad media / Configuración deficiente.
+    Suplantación quizá es posible: Probabilidad media / Configuración deficiente.
 
-NO POSIBLE: Dominio protegido correctamente.
+    Suplantación NO es posible: Dominio protegido correctamente.
 
-🕵️ ¿Cómo comprobar si mi empresa está en la lista?
-Como los dominios están hasheados, no puedes leerlos directamente. Puedes usar este pequeño script en Python para verificar si tu dominio fue parte del estudio y cuál fue el resultado.
+raw_output: Resultado crudo del análisis hasheado al tener datos críticos.
 
-Python
+sector: Sector comercial al que pertenece la empresa de la web.
 
-import hashlib
-import csv
+ciudad: Ciudad donde se encuentra la sede de la web.
 
-def check_domain(my_domain, csv_file):
-    # Crear hash SHA-256 del dominio
-    domain_hash = hashlib.sha256(my_domain.encode('utf-8')).hexdigest()
-    
-    with open(csv_file, mode='r') as infile:
-        reader = csv.reader(infile)
-        for rows in reader:
-            if rows[0] == domain_hash:
-                return f"Dominio: {my_domain}\nResultado: {rows[1]}"
-    return "Dominio no encontrado en el dataset."
+comunidad: Comunidad autónoma donde se encuentra la sede de la web.
 
-# Uso
-print(check_domain("tuempresa.com", "results_2026.csv"))
-⚠️ Nota Ética y Metodología
+## ¿Cómo comprobar si mi empresa está en la lista?
+Como los dominios están hasheados, no puedes leerlos directamente.
+
+Desde HackBlock hemos desarrollado una herramienta web que permite descubrir en 30
+segundos si un dominio es vulnerable y por lo tanto, puede ser suplantado.
+
+Sin coste, publicamos la herramienta con objetivo de cambiar las estadísticas y crear
+concienciación empresarial.
+
+Puedes acceder a la herramienta por el siguiente enlace: https://hack-block.com/analisis
+
+### ⚠️ Nota Ética y Metodología
 Análisis Pasivo: Este estudio se ha realizado consultando registros DNS públicos. En ningún momento se han realizado ataques activos, envíos de correos fraudulentos ni intrusiones en sistemas.
 
 Anonimato: No publicamos la lista de dominios vulnerables en texto plano para evitar facilitar una "lista de objetivos" a ciberdelincuentes.
 
-🛡️ Solución y Contacto
-La configuración técnica (DMARC/SPF) es el primer paso, pero incluso las empresas en el grupo 🟢 "NO POSIBLE" son vulnerables al factor humano (Phishing, Ingeniería Social, Typosquatting).
 
-En HackBlock, cerramos el círculo de seguridad entrenando a tu equipo.
-
-📥 Descargar Informe Completo (PDF)
-
-🛑 Solicitar Auditoría de Phishing Gratuita
-
-🌐 Web: [enlace sospechoso eliminado]
-
-Generated by HackBlock Intelligence Team - 2026
+*Generated by HackBlock Intelligence Team - 2026*
